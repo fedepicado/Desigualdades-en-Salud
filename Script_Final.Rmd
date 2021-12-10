@@ -1,0 +1,1172 @@
+---
+title: '**Trabajo práctico final de Biometría II: Desigualdades en salud**'
+author: '**Grupo 6: Violeta López, Camila Vázquez Cañas, Federico Picado, Inés Beckerman**'
+date: "10/11/2020"
+output:
+  pdf_document:
+    highlight: tango
+  html_document:
+    df_print: paged
+geometry: margin=1.5cm
+options: width = 150
+fontsize: 18p
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning= FALSE, message=FALSE, size= 10, tidy = TRUE, tidy.opts = list(width.cutoff=50))
+library(tinytex)
+library(ggplot2)
+library(sjPlot)
+rm(list=ls())
+```
+
+# Introducción
+
+Las enfermedades crónicas no transmisibles (ENT), como las enfermedades cardiovasculares, enfermedades respiratorias crónicas, diabetes y cáncer, son un problema de salud cada vez mayor en todo el mundo. En nuestro país representan el 80% del total de las causas de muertes y el 76% de los años de vida ajustados por discapacidad (WHO 2014). Estas enfermedades suelen compartir factores de riesgo en común, como son la alimentación inadecuada, el sedentarismo y el tabaquismo (WHO 2005).
+
+Una enfermedad suele no tener una única causa y los determinantes que la producen son múltiples y pertenecen a distintos niveles de organización.
+
+En los últimos años se ha enfatizado la relevancia de los factores sociales como determinantes de múltiples enfermedades, a través de múltiples factores de riesgo (Phelan et al. 2010; Marmot and Allen 2014). Existe fuerte evidencia de que la mayoría de los factores de riesgo de ENT están estructurados a lo largo del gradiente socioeconómico (Di Cesare et al. 2013).
+
+Comprender cómo las desigualdades en salud se distribuyen espacialmente y si se reducen o no en el tiempo es un objetivo fundamental de la salud pública; monitorear su distribución y evolución es necesario para evaluar y dirigir las posibles acciones para enfrentarlas.
+
+Con el objetivo de comprender cómo las desigualdades en salud se distribuyen espacialmente y si se reducen o no en el tiempo, la Comisión de la OMS sobre los Determinantes Sociales de la Salud realizó un llamado a la acción para el monitoreo rutinario de las desigualdades en salud (WHO 2009). Este monitoreo permite hacer un seguimiento sistemático de las desigualdades sanitarias y de los determinantes sociales de la salud, así como evaluar los efectos de las políticas e intervenciones en la equidad sanitaria.
+
+En Argentina se implementó en 2005 la primera edición de la Encuesta Nacional de Factores de Riesgo (ENFR), que es representativa a nivel nacional y provincial, y que desde entonces se realiza con una periodicidad de 4 años. La ENFR proporciona información confiable sobre la prevalencia de factores de riesgo en ENT y su evolución en el tiempo.
+
+Por todo lo expuesto, el objetivo es estudiar la asociación entre conductas saludables y nivel socioeconómico en mayores de 18 años, a partir de información recolectada por la ENFR 2018 (ENFR, INDEC 2018).
+
+En particular, en este trabajo se estudiará la asociación entre el consumo de frutas/verduras y el nivel socioeconómico a escala individual, hogar y provincial.
+
+# Metodología
+
+La ENFR se realizó entre septiembre y noviembre de 2018, sobre 29224 personas mayores de 18 años de toda la República Argentina, residentes en viviendas particulares de áreas urbanas de 5000 y más habitantes.
+
+El cuestionario de cada individuo incluyó preguntas sobre aspectos socioeconómicos (tanto a nivel individual como a nivel del hogar y del núcleo familiar) como aspectos sobre hábitos saludables y de factores de riesgo a nivel individual.
+
+En particular, en este Trabajo se analizó la relación entre **el consumo de al menos 5 porciones diarias de frutas o verduras** y **5 variables socioeconómicas a distintos niveles**:
+
+- A nivel individual:
+
+1) **Cobertura de salud**. 
+
+2 niveles: 1) Con obra social, prepaga o servicio de emergencia médica; 2) Solo cobertura pública.
+
+2) **Nivel de instrucción**. 
+
+2 niveles: 1) Secundario incompleto o menos; 2) Secundario completo o más.
+
+- A nivel del hogar:
+
+1) **Vivienda deficitaria**.
+
+2 niveles: 1) Sí; 2) No
+
+2) **Quintil de ingresos del jefe de hogar**.
+
+5 niveles, correspondientes a los 5 quintiles.
+
+- A nivel de la provincia:
+
+1) **NBI (porcentaje de viviendas con necesidades básicas insatisfechas en cada provincia)**.
+
+3 niveles, 1) Bajo; 2) Medio; 3) Alto.
+
+Los datos de NBI fueron obtenidos a partir del Informe Censal de 2010. Allí, el NBI para cada provincia fue calculado como el porcentaje de hogares con necesidades básicas insatisfechas. 
+
+Para la agrupación entre bajo, medio y alto, se dividieron los valores de NBI provinciales en terciles, de modo que quedaran entre 7 y 9 provincias por categoría. La categoría más baja abarcó a valores de NBI de hasta 9%, la media, de entre 9% y 15%, y la alta, mayor a 15%.
+
+
+Además, se consideraron **3 variables de control** para abarcar parte de la heterogeneidad en las observaciones. Estas variable son: 
+
+1) Edad, variable cuantitativa cuyo rango original va de 18 a 104 años.
+
+2) Género, 2 niveles, 1) Hombre; 2) Mujer.
+
+3) Provincia de residencia, 24 niveles, todas las provincias más la Ciudad Autónoma de Buenos Aires.
+
+Detalles de la elección y construcción de las variables en el ANEXO I.
+
+Para el análisis, como la variable respuesta es una variable dicotómica con una potencial distribución de probabilidades de Bernoulli, se ajustó a una regresión logística. Para medir magnitud de efecto de las variables explicatorias (VE), se estimaron los odds ratios (OR) con sus respectivos intervalos de confianza del 95% ajustados por las otras VE. Las predicciones sobre cambios en la probabilidad en función de cada VE se calcularon a escala de la variable respuesta. En este trabajo no se puso a prueba la interacción de las variables, bajo el criterio de que se trata de un estudio observacional y que no encontramos motivos fuertes que nos permitiesen plantear una hipótesis al respecto. Todos los análisis se efectuaron utilizando Rstudio V. 3.6.3.
+
+# Resultados
+
+## Estadística descriptiva
+
+```{r}
+# Leer datos, ordenar y nombrar la tabla.
+
+datos <- read.table("Datos.txt", sep ="|", header = TRUE, dec =".")
+
+datos1 <- datos[c("bhch04", "bhch03", "cod_provincia", "bhcv01", "bhcv07", "bhcv06", "bhcv09", "quintil_uc", "nivel_instruccion_agrupado", "cobertura_salud", "consumo_fv")]
+
+
+colnames(datos1) <- c("Edad", "Genero", "Provincia", "Tipo_de_vivienda", "Agua", "Gas", "Banio","Quintil_ingresos", "Nivel_instruccion", "Cobertura_salud",  "Consumo_FV")
+
+datos1$Genero <- as.factor(datos1$Genero)
+datos1$Provincia <- as.factor(datos1$Provincia)
+datos1$Consumo_FV <- as.factor(datos1$Consumo_FV)
+datos1$Tipo_de_vivienda <- as.factor(datos1$Tipo_de_vivienda)
+datos1$Agua <- as.factor(datos1$Agua)
+datos1$Gas<-as.factor(datos1$Gas)
+datos1$Cobertura_salud <- as.factor(datos1$Cobertura_salud)
+datos1$Nivel_instruccion <- as.factor(datos1$Nivel_instruccion)
+datos1$Quintil_ingresos <- as.factor(datos1$Quintil_ingresos)
+datos1$Edad <- as.integer(datos1$Edad)
+datos1$Banio<-as.factor(datos1$Banio)
+class(datos1$edad)
+
+# Borramos los datos "NS/NC" de Consumo_FV
+datos1<-datos1[datos1$Consumo_FV != 99, ]
+
+datos1$Consumo_FV<-factor(datos1$Consumo_FV, levels=c("1", "2"))
+
+# Reescribimos las variables para facilitar la estadística descriptiva
+
+#Consumo_FV
+library(plyr)
+datos1$Consumo_FV <- revalue(datos1$Consumo_FV, c("1"="Mucha"))
+datos1$Consumo_FV <- revalue(datos1$Consumo_FV, c("2"="Poca"))
+
+
+datos1$Genero <- revalue(datos1$Genero, c("1"="Hombre"))
+datos1$Genero <- revalue(datos1$Genero, c("2"="Mujer"))
+
+
+#Provincia
+datos1$Provincia <- revalue(datos1$Provincia, c("2"="CABA"))
+datos1$Provincia <- revalue(datos1$Provincia, c("6"="Buenos Aires"))
+datos1$Provincia <- revalue(datos1$Provincia, c("10"="Catamarca"))
+datos1$Provincia <- revalue(datos1$Provincia, c("14"="Cordoba"))
+datos1$Provincia <- revalue(datos1$Provincia, c("18"="Corrientes"))
+datos1$Provincia <- revalue(datos1$Provincia, c("22"="Chaco"))
+datos1$Provincia <- revalue(datos1$Provincia, c("26"="Chubut"))
+datos1$Provincia <- revalue(datos1$Provincia, c("30"="Entre Rios"))
+datos1$Provincia <- revalue(datos1$Provincia, c("34"="Formosa"))
+datos1$Provincia <- revalue(datos1$Provincia, c("38"="Jujuy"))
+datos1$Provincia <- revalue(datos1$Provincia, c("42"="La Pampa"))
+datos1$Provincia <- revalue(datos1$Provincia, c("46"="La Rioja"))
+datos1$Provincia <- revalue(datos1$Provincia, c("50"="Mendoza"))
+datos1$Provincia <- revalue(datos1$Provincia, c("54"="Misiones"))
+datos1$Provincia <- revalue(datos1$Provincia, c("58"="Neuquen"))
+datos1$Provincia <- revalue(datos1$Provincia, c("62"="Rio Negro"))
+datos1$Provincia <- revalue(datos1$Provincia, c("66"="Salta"))
+datos1$Provincia <- revalue(datos1$Provincia, c("70"="San Juan"))
+datos1$Provincia <- revalue(datos1$Provincia, c("74"="San Luis"))
+datos1$Provincia <- revalue(datos1$Provincia, c("78"="Santa Cruz"))
+datos1$Provincia <- revalue(datos1$Provincia, c("82"="Santa Fe"))
+datos1$Provincia <- revalue(datos1$Provincia, c("86"="Santiago del Estero"))
+datos1$Provincia <- revalue(datos1$Provincia, c("90"="Tucuman"))
+datos1$Provincia <- revalue(datos1$Provincia, c("94"="Tierra del Fuego"))
+
+# Tipo de vivienda
+
+datos1$Tipo_de_vivienda <- revalue(datos1$Tipo_de_vivienda, c("1"="Casa"))
+datos1$Tipo_de_vivienda <- revalue(datos1$Tipo_de_vivienda, c("2"="Casilla"))
+datos1$Tipo_de_vivienda <- revalue(datos1$Tipo_de_vivienda, c("3"="Departamento"))
+datos1$Tipo_de_vivienda <- revalue(datos1$Tipo_de_vivienda, c("4"="Pieza de inquilinato"))
+datos1$Tipo_de_vivienda<- revalue(datos1$Tipo_de_vivienda, c("5"="Pieza en hotel o pension"))
+datos1$Tipo_de_vivienda <- revalue(datos1$Tipo_de_vivienda, c("6"="Local no construido para habitacion"))
+datos1$Tipo_de_vivienda <- revalue(datos1$Tipo_de_vivienda, c("7"="Otros"))
+
+# Agua (acceso al agua)
+
+datos1$Agua <- revalue(datos1$Agua, c("1"="Dentro de la vivienda"))
+datos1$Agua <- revalue(datos1$Agua, c("2"="Dentro del terreno"))
+datos1$Agua <- revalue(datos1$Agua, c("3"="Fuera del terreno"))
+
+
+# Reescribimos la variable banio
+
+datos1$Banio <- revalue(datos1$Banio, c("1"="Si"))
+datos1$Banio <- revalue(datos1$Banio, c("2"="No"))
+
+# Reescribimos la variable gas
+
+datos1$Gas <- revalue(datos1$Gas, c("1"="De red"))
+datos1$Gas <- revalue(datos1$Gas, c("2"="Garrafa"))
+datos1$Gas <- revalue(datos1$Gas, c("3"="Lenia o carbon"))
+datos1$Gas <- revalue(datos1$Gas, c("4"="Otro"))
+
+
+
+# Reescribimos la variable nivel de instruccion del jefe/a de hogar 
+
+datos1$Nivel_instruccion <- revalue(datos1$Nivel_instruccion, c("1"="Hasta primario incompleto"))
+datos1$Nivel_instruccion <- revalue(datos1$Nivel_instruccion, c("2"="Primario completo y secundario incompleto"))
+datos1$Nivel_instruccion <- revalue(datos1$Nivel_instruccion, c("3"="Secundario completo y mas"))
+
+# Reescribimos la variable cobertura de salud
+
+datos1$Cobertura_salud <- revalue(datos1$Cobertura_salud,c("1"="Con obra social, prepaga o servicio de emergencia medica"))
+datos1$Cobertura_salud <- revalue(datos1$Cobertura_salud,c("2"="Solo C.Publica"))
+
+
+# Reescribimos la variable quintil de hogares
+
+datos1$Quintil_ingresos<-revalue(datos1$Quintil_ingresos, c("1"="Quintil 1"))
+datos1$Quintil_ingresos<-revalue(datos1$Quintil_ingresos, c("2"="Quintil 2"))
+datos1$Quintil_ingresos<-revalue(datos1$Quintil_ingresos, c("3"="Quintil 3"))
+datos1$Quintil_ingresos<-revalue(datos1$Quintil_ingresos, c("4"="Quintil 4"))
+datos1$Quintil_ingresos<-revalue(datos1$Quintil_ingresos, c("5"="Quintil 5"))
+
+
+#Creamos columna para NBI
+datos1[,"NBI"] <- NA
+
+datos1$NBI[datos1$Provincia=="CABA"]<-6.0
+datos1$NBI[datos1$Provincia=="Buenos Aires"]<-8.1
+datos1$NBI[datos1$Provincia=="Catamarca"]<-11.3
+datos1$NBI[datos1$Provincia=="Cordoba"]<-6.0
+datos1$NBI[datos1$Provincia=="Corrientes"]<-15.1
+datos1$NBI[datos1$Provincia=="Chaco"]<-18.2
+datos1$NBI[datos1$Provincia=="Chubut"]<-8.4
+datos1$NBI[datos1$Provincia=="Entre Rios"]<-8.0
+datos1$NBI[datos1$Provincia=="Formosa"]<-19.7
+datos1$NBI[datos1$Provincia=="Jujuy"]<-15.5
+datos1$NBI[datos1$Provincia=="La Pampa"]<-3.8
+datos1$NBI[datos1$Provincia=="La Rioja"]<-12.2
+datos1$NBI[datos1$Provincia=="Mendoza"]<-7.6
+datos1$NBI[datos1$Provincia=="Misiones"]<-15.6
+datos1$NBI[datos1$Provincia=="Neuquen"]<-10.4
+datos1$NBI[datos1$Provincia=="Rio Negro"]<-9.4
+datos1$NBI[datos1$Provincia=="Salta"]<-19.4
+datos1$NBI[datos1$Provincia=="San Juan"]<-10.2
+datos1$NBI[datos1$Provincia=="San Luis"]<-7.9
+datos1$NBI[datos1$Provincia=="Santa Cruz"]<-8.2
+datos1$NBI[datos1$Provincia=="Santa Fe"]<-6.4
+datos1$NBI[datos1$Provincia=="Santiago del Estero"]<-17.6
+datos1$NBI[datos1$Provincia=="Tucuman"]<-14.2
+datos1$NBI[datos1$Provincia=="Tierra del Fuego"]<-13.3
+
+
+library(visdat)
+vis_miss(datos1)
+```
+*Figura 1*: Presencia/ausencia de datos faltantes para cada variable.
+
+No hay datos faltantes.
+
+```{r}
+#Creamos variable "Tipo_de_vivienda_agrupado" 
+
+datos1$Tipo_de_vivienda_agrupado <- with(datos1, ifelse(Tipo_de_vivienda %in% c("Casa", "Departamento"), "Adecuada", "No adecuada"))
+
+
+#Creamos variable "Gas_agrupado"
+
+datos1$Gas_agrupado <- with(datos1, ifelse(Gas == "De red", "Si", "No"))
+
+#Creamos variable "Vivienda deficitaria" teniendo en cuenta toda la info del hogar
+datos1$Vivienda_deficitaria<- with(datos1, ifelse(Tipo_de_vivienda_agrupado =="No adecuada" |Banio=="No"| Agua %in% c("Dentro del terreno", "Fuera del terreno") |  Gas_agrupado=="No", "Deficitaria", "No deficitaria"))
+
+#Creamos variable nivel de educacion del jefe/a de hogar agrupado
+datos1$Nivel_Educ_agrup <- with(datos1, ifelse(Nivel_instruccion =="Secundario completo y mas","Sec compl o más","Primario o Secundario incompleto"))
+
+
+#Creamos variable "NBI_agrupado"
+datos1$NBI<-as.factor(datos1$NBI)
+datos1$NBI_agrupado_intermedio <- datos1$NBI
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("3.8"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("6"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("6.4"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("7.6"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("7.9"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("8"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("8.1"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("8.2"="Bajo"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("8.4"="Bajo"))
+
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("9.4"="Medio"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("10.2"="Medio"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("10.4"="Medio"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("11.3"="Medio"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("12.2"="Medio"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("13.3"="Medio"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("14.2"="Medio"))
+
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("15.1"="Alto"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("15.5"="Alto"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("15.6"="Alto"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("17.6"="Alto"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("18.2"="Alto"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("19.4"="Alto"))
+datos1$NBI_agrupado_intermedio <- revalue(datos1$NBI_agrupado_intermedio, c("19.7"="Alto"))
+
+names(datos1)[names(datos1)=="NBI_agrupado_intermedio"] <- "NBI_agrupado"
+
+
+```
+
+## Gráficos descriptivos
+
+## _Variables de control_
+
+### Consumo según género
+
+```{r fig.align="center"}
+
+s1 <- ggplot(datos1, aes(x=Genero, fill=Consumo_FV ))
+s1 + geom_bar(position = "fill", width = 0.5,color="black" ) + labs( x = "Género", y = "Consumo de frutas/verduras") +  theme(legend.position = "right") +  scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca")) +
+  annotate("text", x = 1, y = .45, label = " 94.7%")+
+  annotate("text", x = 1, y = 0.975, label = " 5.3%") + 
+  annotate("text", x = 2, y = .45, label = " 93.1%")+
+  annotate("text", x = 2, y = 0.965, label = " 6.9%")
+```
+*Figura 2*: Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según el género ("hombre" o "mujer").
+
+
+Observamos que para ambos géneros, la gran mayoría de las personas consume pocas frutas o verduras diarias. Las mujeres parecen comer un poco más de frutas/verduras que los hombres.
+
+### Consumo segun provincia
+
+```{r fig.align="center"}
+
+s2 <- ggplot(datos1, aes(x=Provincia, fill=Consumo_FV))
+s2 + geom_bar(position = "fill", width = 0.5, color="black") + labs( x = "Provincia", y = "Consumo de frutas/verduras") +  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca"))
+
+```
+*Figura 3*: Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según la provincia de residencia.
+
+
+En todas las provincias, entre un 80% y un 99% de las personas aproximadamente consumen menos de 5 porciones diarias de frutas o verduras. En algunas provincias, este porcentaje parece ser bastante menor que el promedio (por ejemplo, en La Pampa y Formosa) y en otras, bastante mayor (como en Santiago del Estero, Tucumán o San Juan).
+
+### Consumo según edad
+
+```{r fig.align="center"}
+s3 <- ggplot(datos1, aes(x=Edad, fill=Consumo_FV))
+s3 + geom_bar(position = "dodge", color="black") + labs( x = "Edad", y = "Consumo de frutas/verduras") + theme(axis.text.x=element_text(angle=0,hjust=0.5,vjust=0.5, size = 10)) +  scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca")) +  theme(legend.position = "top") 
+
+```
+*Figura 4*: Gráfico de barras de frecuencia de consumo de muchas o pocas porciones diarias de frutas/verduras según la edad (18 a 104 años). Las barras azules representan poco consumo y las barras rojas mucho consumo.
+
+
+Al analizar la altura de cada barra, se observa la distribución de edades dentro de la muestra. La distribución es asimétrica, con una moda de 38 años y una media de 46,5 años.
+
+En rojo, observamos la cantidad de gente de cada edad que consume 5 o más porciones diarias de frutas o verduras. La proporción es baja en todas las edades. Más adelante analizaremos si hay diferencias significativas entre distintas edades.
+
+#### Tabla de medias de edad según el consumo de frutas/verduras  
+```{r fig.align="center"}
+library(doBy)
+summaryBy(Edad ~ Consumo_FV, data = datos1, 
+          FUN = function(x) { c(m = mean(x), s = sd(x)) } )
+```
+*Tabla 1*: Media de edad de los individuos encuestados según el consumo de muchas o pocas porciones diarias frutas/verduras.
+
+
+En la *Tabla 1* vemos que el promedio de edad de la gente que consume 5 o más porciones de fruta y verdura diarias es un poco mayor a los que consumen menos.
+
+## _Variables explicatorias_
+
+## **A nivel del individuo**
+
+### Consumo según nivel de instrucción
+
+```{r fig.align="center"}
+s4 <- ggplot(datos1, aes(x=Nivel_Educ_agrup, fill=Consumo_FV))
+s4 + geom_bar(position = "fill", width = 0.5, color="black") + labs( x = "Nivel educativo", y = "Consumo de frutas/verduras") +  theme(axis.text.x=element_text(angle=0,hjust=0.5,vjust=0.5)) + scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca")) +
+  annotate("text", x = 1, y = .45, label = " 94.9%")+
+  annotate("text", x = 1, y = 0.975, label = " 5.2%") + 
+  annotate("text", x = 2, y = .45, label = " 93.0%")+
+  annotate("text", x = 2, y = 0.965, label = " 7.0%")+
+  scale_x_discrete(labels= c("Primario o Secundario incompleto", "Secundario completo o más" ))
+```
+*Figura 5*:  Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según el nivel de instrucción ("primario o secundario incompleto" o "secundario completo o más").
+
+
+El consumo de frutas o verduras parece ser mayor en personas con secundario completo o más.
+
+
+### Consumo según cobertura de salud
+
+```{r fig.align="center"}
+s5 <- ggplot(datos1, aes(x=Cobertura_salud, fill=Consumo_FV))
+s5 + geom_bar(position = "fill", width = 0.5, color="black") + labs( x = "Cobertura de Salud", y = "Consumo de frutas/verduras") +  theme(axis.text.x=element_text(angle=0,hjust=0.5,vjust=0.5)) + scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca")) +
+  annotate("text", x = 1, y = .45, label = " 93.0%")+
+  annotate("text", x = 1, y = 0.97, label = " 7.0%") + 
+  annotate("text", x = 2, y = .45, label = " 95.5%")+
+  annotate("text", x = 2, y = 0.977, label = " 4.5%")+
+  scale_x_discrete(labels= c("Obra social, prepaga o servicio \n de emergencia médica", "Sólo cobertura pública"))
+```
+*Figura 6*: Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según el tipo de cobertura de salud ("obra social, prepaga o servicio de emergencia médica" o "sólo cobertura de salud").
+
+
+Se observa una mayor proporción de personas que consumen muchas frutas/verduras en la primera categoría (obra social, prepaga o servicio de emergencia médica) en relación a la segunda (cobertura pública).
+
+## **A nivel del hogar**
+
+### Consumo según quintil de ingresos del jefe del hogar
+
+```{r fig.align="center"}
+s6 <- ggplot(datos1, aes(x=Quintil_ingresos, fill=Consumo_FV))
+s6 + geom_bar(position = "fill", width = 0.5, color="black") + labs( x = "Quintil de Ingresos", y = "Consumo de frutas/verduras") +  theme(axis.text.x=element_text(angle=0,hjust=0.5,vjust=0.5)) + scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca")) +
+  annotate("text", x = 1, y = .45, label = " 96.1%")+
+  annotate("text", x = 1, y = 0.985, label = " 3.9%") + 
+  annotate("text", x = 2, y = .45, label = " 94.9%")+
+  annotate("text", x = 2, y = 0.975, label = " 5.1%") +
+  annotate("text", x = 3, y = .45, label = " 94.2%")+
+  annotate("text", x = 3, y = 0.97, label = " 5.8%") + 
+  annotate("text", x = 4, y = .45, label = " 92.5%")+
+  annotate("text", x = 4, y = 0.965, label = " 7.5%") + 
+  annotate("text", x = 5, y = .45, label = " 91.3%")+
+  annotate("text", x = 5, y = 0.965, label = " 8.7%") 
+```
+*Figura 7*: Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según el quintil de ingresos del jefe del hogar (del 1 al 5).
+
+
+Se puede observar que el consumo de frutas y verduras es mayor a medida que los individuos pertenecen a quintiles de mayores ingresos, lo que pareciera indicar un efecto dosis-respuesta.
+
+### Consumo según vivienda deficitaria sí o no
+
+```{r fig.align="center"}
+
+s7 <- ggplot(datos1, aes(x=Vivienda_deficitaria, fill=Consumo_FV))
+s7 + geom_bar(position = "fill", width = 0.5, color="black") + labs( x = "Vivienda deficitaria", y = "Consumo de frutas/verduras") +  theme(axis.text.x=element_text(angle=0,hjust=.5,vjust=0.5)) + scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca"))  +
+  annotate("text", x = 1, y = .45, label = " 94.6%")+
+  annotate("text", x = 1, y = 0.97, label = " 5.4%") + 
+  annotate("text", x = 2, y = .45, label = " 93.1%")+
+  annotate("text", x = 2, y = 0.965, label = " 6.9%")
+
+
+```
+*Figura 8*: Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según si la vivienda se clasifica como deficitaria o no.
+
+
+La proporción de gente que come muchas frutas/verduras es levemente mayor en el caso de las viviendas no deficitarias.
+
+## **A nivel de la provincia**
+
+### Gráfico de consumo según NBI agrupado
+
+```{r fig.align="center"}
+
+s8 <- ggplot(datos1, aes(x=NBI_agrupado, fill=Consumo_FV))
+s8 + geom_bar(position = "fill", width = 0.5, color="black") + labs( x = "NBI agrupado", y = "Consumo de frutas/verduras") +  theme(axis.text.x=element_text(angle=0,hjust=.5,vjust=0.5)) + scale_fill_discrete(name = "Consumo F/V", labels = c("Mucha", "Poca"))  +
+  annotate("text", x = 1, y = .45, label = " 93.4%")+
+  annotate("text", x = 1, y = 0.97, label = " 6.6%") + 
+  annotate("text", x = 2, y = .45, label = " 95.0%")+
+  annotate("text", x = 2, y = 0.975, label = " 5.0%")+ 
+  annotate("text", x = 3, y = .45, label = " 93.7%")+
+  annotate("text", x = 3, y = 0.97, label = " 6.3%")
+
+
+```
+*Figura 9*: Gráfico de barras de proporción de consumo de muchas o pocas porciones diarias de frutas/verduras según el NBI de la provincia de residencia del encuestado ("bajo", "medio", "alto").
+
+
+No parece haber asociación entre el NBI y el consumo de frutas/verduras, o al menos no la asociación esperada (el consumo de 5 o más porciones de F/V es mayor en las provincias con NBI bajo y alto).
+
+# **Tabla resumen de la estadística descriptiva** 
+
+```{r echo=FALSE, results='hide',message=FALSE}
+Variables_explicatorias <- c("Género", "Mujer", "Varón", "Nivel Educativo", "Primario o Secundario incompleta", "Secundario completo o mas","Cobertura Médica", "Solo cobertura pública", "Obra social, prepaga",  "Quintil de ingresos","1","2","3","4","5", "Vivienda deficitaria", "Si", "No")
+
+Total_n_28471 <- c(0,16257, 12214,0, 12548, 15923, 0, 8555, 19916, 0, 5513, 5778, 5555, 5867, 5758, 0, 12401, 16070)
+porcentaje <- c(0,57.1, 42.9,0, 44.07, 55.93,0, 30.05, 69.95, 0, 19.36, 20.29, 19.51,20.61,20.22, 0, 43.56, 56.44)
+porcentaje_mucha <-c(0, 6.91, 5.31, 0, 5.19, 7.04, 0, 4.50,6.96,0,3.86,5.07,5.78,7.52,8.75,0,5.35,6.90)
+porcentaje_poca <-c(0, 93.09,94.69,0, 94.81, 92.96, 0, 95.50,93.04,0,96.14,94.93,94.22,92.48,91.25,0,94.65,93.10) 
+tabla1<- data.frame(Variables_explicatorias,Total_n_28471,porcentaje,porcentaje_mucha,porcentaje_poca)
+colnames(tabla1)<-c("Variables explicatorias", "Total n=28471", "% Total", "% Mucha", "% Poca")
+library(flextable)
+knitr::opts_chunk$set(webshot = "webshot2")
+flextabla1 <- flextable(tabla1)
+flextabla1 <- autofit(flextabla1)
+flextabla1 <- merge_at(flextabla1,i="1")
+flextabla1 <- merge_at(flextabla1, i="4")
+flextabla1 <- merge_at(flextabla1, i="7")
+flextabla1 <- merge_at(flextabla1, i="10")
+flextabla1 <- merge_at(flextabla1, i="16")
+flextabla1 <- italic(flextabla1, i="1")
+flextabla1 <- italic(flextabla1, i="4")
+flextabla1 <- italic(flextabla1, i="7")
+flextabla1 <- italic(flextabla1, i="10")
+flextabla1 <- italic(flextabla1, i="16")
+flextabla1 <- fontsize(flextabla1,i="1", size = 12)
+flextabla1 <- fontsize(flextabla1,i="4", size = 12)
+flextabla1 <- fontsize(flextabla1,i="7", size = 12)
+flextabla1 <- fontsize(flextabla1,i="10", size = 12)
+flextabla1 <- fontsize(flextabla1,i="16", size = 12)
+flextabla1 <- fontsize(flextabla1,size = 12, part = "header")
+flextabla1 <- bold(flextabla1, i="1", bold = TRUE)
+flextabla1 <- bold(flextabla1, i="4", bold = TRUE)
+flextabla1 <- bold(flextabla1, i="7", bold = TRUE)
+flextabla1 <- bold(flextabla1, i="10", bold = TRUE)
+flextabla1 <- bold(flextabla1, i="16", bold = TRUE)
+flextabla1 <- bold(flextabla1,bold = TRUE, part = "header")
+flextabla1
+```
+
+```{r, out.width = "500pt", out.height="600pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Tabla.png")
+```
+*Tabla 2*: Tabla resumen de estadística descriptiva. Se muestra el total de individuos encuestados correspondientes a cada nivel de las variables explicatorias (Total n), el porcentaje de individuos en cada nivel (% Total), el porcentaje de individuos dentro de ese nivel que consumen 5 o más porciones diarias de frutas y verduras (% Mucha), y el porcentaje de individuos dentro de ese nivel que consumen menos de 5 porciones diarias de frutas y verduras (% Poca).
+
+```{r fig.align="center"}
+#Borramos los datos de las edades 104,99,96,94,90 porque mucha=0
+datos1<-datos1[datos1$Edad != 104, ]
+datos1<-datos1[datos1$Edad != 99, ]
+datos1<-datos1[datos1$Edad != 96, ]
+datos1<-datos1[datos1$Edad != 94, ]
+datos1<-datos1[datos1$Edad != 90, ]
+```
+
+# Modelo teórico
+
+## El modelo tiene tres componentes
+
+### **Predictor lineal**
+
+$$\eta_i = \beta_0 + \beta_1\ * Edad + \beta_2\ * Mujer + \beta_3\ * Cobertura\ salud + \beta_4\ * Secundario\ Completo\ o\ más\ + $$
+$$ \beta_5\ Vivienda\ deficitaria + \beta_6\ *  Quintil\ 2\ +\beta_7\ * Quintil\ 3\ +$$
+$$ \beta_8\ * Quintil\ 4\ + \beta_{9}\ * Quintil\ 5 + \beta_{10} * NBI\ Medio\ +  \beta_{11} * NBI\ Alto +$$ 
+$$\beta_{12} * Provincia\ 1 + ... + \beta_{36} * Provincia\ 24 $$
+
+### **Componente aleatorio**
+
+
+$$Y_i: consumo\ de\ 5\ o\ más\ frutas\ o\ verduras\ diarias\ o\ no\ consumo\ de\ 5\ o\ más\ frutas\ o\ verduras\ diarias$$
+$$Y_i\ \sim {Bernoulli} (\pi_i)$$
+
+### **Función de enlace**
+
+$$\eta_i = logit\ \pi_i = ln\ \frac{\pi_i}{1-\pi_i} = ln\ (odds\  \pi_i)$$
+
+# Planteamos los supuestos y construimos el modelo
+
+## Supuestos
+
+1) Muestra aleatoria, observaciones independientes.
+
+2) No-colinealidad. Como las VE que probablemente son colineales son cualitativas, no podemos calcular VIF ni hacer gráficos de correlación. Sin embargo, es probable que haya colinealidad entre las varaibles, porque 5 de ellas hablan sobre el nivel socioeconómico, y es razonable, por ejemplo, que las personas con bajos ingresos posean solamente cobertura de salud pública. Para analizar si hay colinealidad vamos a plantear distintos modelos, agregando variables de a una, y analizar cambios en las significancias.
+
+3) Linealidad (entre las VE cuantitativas y el logaritmo natural de los odds estimados a partir de la muestra para cada nivel) (ver ANEXO II).
+
+## Aclaración sobre los resultados presentados
+
+Presentamos las salidas de los **"drop1"** para cada modelo, en las cuales evaluamos la significancia de todas las variables incluidas en el modelo. Los summaries, en los que evaluamos que los estimadores para cada variable dieran números razonables, se encuentran en el ANEXO III.
+
+### Modelo 1
+
+Primero, incluimos las 3 variables de control. 
+
+```{r}
+datos1$Consumo_FV<-as.numeric(datos1$Consumo_FV)
+datos1$Consumo_FV[datos1$Consumo_FV == 2] <- 0
+datos1$Consumo_FV<-as.integer(datos1$Consumo_FV)
+
+#cambiamos el valor de vivienda deficitaria
+datos1$Vivienda_deficitaria<- with(datos1, ifelse(Tipo_de_vivienda_agrupado =="No adecuada" |Banio=="No"| Agua %in% c("Dentro del terreno", "Fuera del terreno") |  Gas_agrupado=="No", "1", "0"))
+
+```
+
+```{r, echo=TRUE, tidy=FALSE}
+M1 <- glm(Consumo_FV ~ Edad + Genero + Provincia, data = datos1, family = binomial)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M1)
+drop1(M1, test="Chisq")
+```
+
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_1.png")
+```
+
+Los coeficientes de "edad" y de "género" dan significativos. Si bien la variable "provincia" también lo es, al tener más de 2 niveles no estamos controlando el error global en el summary, por lo que los p-valores observados no son confiables. Además, los coeficientes son diferencias de medias respecto al nivel de referencia (CABA), lo que no es de interés en este caso.
+
+**Para evaluar potencial colinealidad entre las VEs**, vamos a ir agregando las VEs de a una, y evaluando significancias y errores estándar de los coeficientes de regresión parciales a medida que agregamos VEs.
+
+## Probamos agregando las variables explicatorias de a una al modelo con las variables control:
+
+### Modelo 2
+
+"Cobertura de salud".
+
+```{r, echo=TRUE, tidy=FALSE}
+M2 <- glm(Consumo_FV ~ Cobertura_salud + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M2)
+drop1(M2, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_2.png")
+```
+
+Significativa "cobertura de salud".
+
+### Modelo 3
+
+"Nivel educativo"
+
+```{r, echo=TRUE, tidy=FALSE}
+M3 <- glm(Consumo_FV ~ Nivel_Educ_agrup + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M3)
+drop1(M3, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_3.png")
+```
+
+Significativa "nivel educativo".
+
+### Modelo 4
+
+"Quintil de ingresos"
+
+```{r, tidy=FALSE}
+M4 <- glm(Consumo_FV ~ Quintil_ingresos + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M4)
+drop1(M4, test="Chisq")
+```
+
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_4.png")
+```
+
+Significativa "quintil de ingresos". Siguen siendo significativas las variables de control.
+
+### Modelo 5
+
+"Vivienda deficitaria".
+
+```{r, tidy=FALSE}
+M5 <- glm(Consumo_FV ~ Vivienda_deficitaria + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M5)
+drop1(M5, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_5.png")
+```
+
+Significativa "vivienda deficitaria".
+
+### Modelo 6
+
+"NBI agrupado".
+
+En este modelo, excluimos a "provincia", porque "NBI_agrupado" y "provincia" están perfectamente anidados (a cada provincia le corresponde un valor de NBI), por lo que el modelo no se puede ajustar incluyendo las dos variables.
+
+```{r, tidy=FALSE}
+M6 <- glm(Consumo_FV ~ NBI_agrupado + Edad + Genero , data = datos1, family = binomial)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M6)
+drop1(M6, test="Chisq")
+```
+
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_6.png")
+```
+
+Significativo "NBI".
+
+## Ahora vamos complejizando el modelo, sumando de a una VE.
+
+### Modelo 7
+
+```{r, echo=TRUE, tidy=FALSE}
+M7 <- glm(Consumo_FV ~ Cobertura_salud + Nivel_Educ_agrup 
+          + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M7)
+drop1(M7, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_7.png")
+```
+
+Ambas dan significativas.
+
+### Modelo 8
+
+Agregamos "quintil de ingresos".
+
+```{r, echo=TRUE, tidy=FALSE}
+M8 <- glm(Consumo_FV ~ Cobertura_salud + Nivel_Educ_agrup + Quintil_ingresos 
+          + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M8)
+drop1(M8, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_8.png")
+```
+
+
+Al agregar "quintil de ingresos" como VE, deja de dar significativa la variable "cobertura de salud". Esto indica que **probablemente haya colinealidad entre estas dos variables**, y por lo tanto el aporte independiente de cada una de ellas es pequeño, por lo cual uno de los coeficientes se vuelve no significativo.
+
+### Modelo 9
+
+Agregamos, ahora, "vivienda deficitaria", dejando "cobertura de salud" (pero eliminando "quintil de ingresos").
+
+```{r, echo=TRUE, tidy=FALSE}
+M9 <- glm(Consumo_FV ~ Cobertura_salud + Nivel_Educ_agrup + Vivienda_deficitaria +
+            Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M9)
+drop1(M9, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_9.png")
+```
+
+Todos los coeficientes de las variables explicatorias relacionadas con nivel socioeconómico dan significativos por ahora. 
+
+### Modelo 10
+
+Agregamos la última VE, que es NBI agrupado, pero sacando provincia (porque estas dos están perfectamente anidadas).
+
+```{r, echo=TRUE}
+M10 <- glm(Consumo_FV ~ Cobertura_salud + Nivel_Educ_agrup + Vivienda_deficitaria + NBI_agrupado + Edad + Genero , data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M10)
+drop1(M10, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_10.png")
+```
+
+Todas dan significativas.
+
+## Modelo 11
+
+Entre "quintil de ingresos" y "cobertura de salud" detectamos problemas de colinealidad. Ahora probamos incluyendo  "quintil de ingresos", sin "cobertura de salud", y agregando "vivienda deficitaria".
+
+```{r, echo=TRUE, tidy=FALSE}
+M11 <- glm(Consumo_FV ~ Quintil_ingresos + Nivel_Educ_agrup + Vivienda_deficitaria 
+           + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M11)
+drop1(M11, test="Chisq")
+```
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_11.png")
+```
+
+Todas son significativas.
+
+## Modelo 12
+
+Agregamos, al modelo con "quintil de ingresos", "NBI agrupado", y sacamos la provincia.
+
+```{r, echo=TRUE, tidy=FALSE}
+M12 <- glm(Consumo_FV ~ Quintil_ingresos + Nivel_Educ_agrup + Vivienda_deficitaria + 
+             NBI_agrupado + Edad + Genero , data = datos1, family = binomial)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+summary(M12)
+drop1(M12, test="Chisq")
+```
+
+
+```{r, out.width = "500pt", out.height="500pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Modelo_12.png")
+```
+
+Todas son significativas.
+
+# Selección de modelos
+
+Rankeamos los modelos por su devianza residual que nos da una medida de la falta de ajuste y por Akaike (AIC) que tiene en cuenta la verosimilitud y número de parámetros a estimar por los modelos.
+
+```{r}
+anova(M7,M8,M9,M10,M11,M12, test="Chisq")
+AIC(M7,M8,M9,M10,M11,M12)
+```
+
+**Teniendo en cuenta los dos criterios, el modelo 11 (que incluye quintil de ingresos, nivel educativo, vivienda deficitaria, edad, género y provincia) es el ganador.**
+
+# Modelo seleccionado en términos teóricos
+
+### **Predictor lineal**
+
+$$\eta_i = \beta_0 + \beta_1\ * Quintil\ 2 + \beta_2\ * Quintil\ 3 + \beta_4\ * Quintil\ 4 + \beta_5\ * Quintil\ 5 + $$
+$$ \beta_6\ * Secundario\ Completo\ o\ más\ + \beta_7\ Vivienda\ deficitaria + \beta_8\ *  Edad +\beta_9\ * Género + $$
+$$\beta_{10} * Provincia\ 1 + ... + \beta_{34} * Provincia\ 24 $$
+
+### **Componente aleatorio**
+
+
+$$Y_i: consumo\ de\ 5\ o\ más\ frutas\ o\ verduras\ diarias\ o\ no\ consumo\ de\ 5\ o\ más\ frutas\ o\ verduras\ diarias$$
+
+$$Y_i\ \sim {Bernoulli} (\pi_i)$$
+
+### **Función de enlace**
+
+$$\eta_i = logit\ \pi_i = ln\ \frac{\pi_i}{1-\pi_i} = ln\ (odds\  \pi_i)$$
+
+# Validación del modelo
+
+## Prueba de Hosmer-Lemeshow
+
+```{r, eval=TRUE, tidy=TRUE}
+library(ResourceSelection)
+hl <- hoslem.test(datos1$Consumo_FV, fitted(M11), g=10)
+hl
+```
+
+Con un p-valor = 0,957 para la prueba de Hosmer-Lemeshow y una confianza del 95%, no hay evidencias para rechazar la hipótesis de un buen ajuste al modelo.
+
+### Gráfico de frecuencia observada vs. frecuencia esperada para verificar el ajuste
+
+El tamaño de los puntos es proporcional al número de observaciones.
+
+```{r, fig.dim = c(6, 4)}
+# Grafico Hosmer-Lemeshom para verificar el ajuste con los puntos proporcionales al numero de observaciones
+pred <- M11$fitted.values # predicted values
+var <-as.numeric(datos1$Consumo_FV) # var= variable rpta
+N <- 10
+secu<-c(-0.00001,(1:N)/N)
+grupos<-cut(pred,secu)
+valores<-unlist(lapply(split(var,grupos),mean))
+cexs<-unlist(lapply(split(var,grupos),sum))
+maxCex<-max(cexs)
+minCex<-min(cexs)
+plot(secu[-1]-1/N/2,valores,pch=16,xlim=c(0,0.4),ylim=c(0,0.6)
+,xlab='Probabilidad predicha',ylab='Frecuencia observada',cex=4*(cexs-minCex)/maxCex,col='blue') + abline(0,1)
+```
+*Figura 10*: Gráfico frecuencia observada vs. frecuencia predicha (según el modelo seleccionado) para consumo de muchas o pocas porciones diarias de frutas/verduras donde el tamaño de cada punto es proporcional al número de casos.
+
+## Prueba de Kolmogorov-Smirnov
+
+Con un p-valor = 0,8007 para la prueba de Kolmogorov-Smirnov y un NC95% tampoco se encontraron evidencias para rechazar un buen ajuste al modelo (ver ANEXO IV).
+
+## Curva ROC 
+
+La utilizamos para determinar el punto de corte que maximiza la sensibilidad y la especificidad de las predicciones del modelo. **El punto de corte ideal es 0.06**. Es decir, si el modelo estima una probabilidad de consumo mayor a 0.06 para un individuo, asumimos que la predicción es que este individuo consume muchas porciones diarias de frutas/verduras (ver ANEXO IV).
+
+
+### Utilizamos este punto de corte para crear la matriz de confusión
+
+```{r echo=FALSE, results='hide',message=FALSE, fig.show='hide'}
+#Evaluando capacidad predictiva
+
+#calculamos las probabilidades predichas por el modelo para cada caso
+datos1$pred.prob <- predict(M11, type="response")
+
+#curva ROC 
+library(pROC)
+library(Epi)
+ROC(form=Consumo_FV ~ Quintil_ingresos + Nivel_Educ_agrup + Vivienda_deficitaria + Edad + Genero + Provincia, data = datos1)
+```
+
+```{r, out.width = "500pt", out.height="600pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Roc.png")
+```
+*Figura 11*: curva ROC, gráfico donde se ilustra la sensibilidad (tasa de verdaderos positivos) y 1-especificidad (tasa de falsos positivos) de cada uno de los posibles puntos de corte a partir de los cuales se supone que el modelo estima que el individuo consume muchas frutas/verduras. Como se observa en el gráfico, el punto de corte ideal es 0.06. 
+
+El área bajo la curva ROC (AUC) vale 0.68 lo que le confiere una capacidad predictiva "moderada".
+
+```{r eval=TRUE, echo=FALSE}
+#usamos este nuevo pnto de corte para clasificar
+#categorizamos con punto de corte en 0.06
+datos1$pred <- ifelse(datos1$pred.prob >0.060, 1, 0)
+xtab<-table(datos1$pred, datos1$Consumo_FV) # columnas=observado
+library(caret)
+library(e1071)
+confusionMatrix(xtab) #.58 accuracy, .58 sens, .67 esp
+```
+*Tabla 3*: Matriz de confusión y estadísticas. En las columnas de la tabla están los valores observados de consumo de frutas/verduras (0: poco, 1: mucho), en las filas está lo predicho por el modelo respecto del consumo (considerando un punto de corte 0.06).
+
+El modelo tiene una **validez (*accuracy*) del 58%** (la **tasa de error global es del 42%**).
+
+Además, tiene un **58% de sensibilidad** (probabilidad de detectar una persona que consume muchas frutas/verduras cuando efectivamente consume muchas), y un **67% de especificidad** (probabilidad de predecir que una persona no consume suficientes frutas/verduras cuando no lo hace) y por lo tanto, una tasa del 33% de falsos positivos.
+
+
+# Inferencias a partir del modelo seleccionado
+
+## Comparaciones múltiples para "Quintil de ingresos"
+
+```{r}
+library(emmeans)
+options(emmeans= list(emmeans = list(infer = c(TRUE, FALSE)),contrast = list(infer = c(TRUE, TRUE))))
+
+
+datos1$Quintil_ingresos <- factor(datos1$Quintil_ingresos,
+                                levels = c("Quintil 5", "Quintil 4", "Quintil 3", "Quintil 2", "Quintil 1"))
+
+M11 <- glm(Consumo_FV ~ Quintil_ingresos + Nivel_Educ_agrup + Vivienda_deficitaria 
+           + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+M11_contrastes_quintil<- emmeans(M11, pairwise~Quintil_ingresos, type="response")
+confint(M11_contrastes_quintil$contrasts)
+plot(M11_contrastes_quintil, comparisons = TRUE, xlab= "Probabilidad de consumo de F/V", ylab= "Quintil de ingresos")
+```
+
+*Figura 12*: Probabilidad de consumo de 5 o más porciones diaras de F/V para los 5 niveles de quintil de ingresos, a escala de la VR. Las barras grises son los intervalos de confianza (con un nivel de confianza del 95%) para las medias, las flechas rojas son para las comparaciones entre grupos. Si una flecha se superpone a otra de otro grupo, la diferencia no es significativa.
+
+Observamos que entre quintiles lejanos, hay diferencias significativas en cuanto a la probabilidad en el consumo de 5 o más porciones diarias de frutas/verduras (hay mayor consumo en los quintiles superiores); pero entre quintiles cercanos no hay diferencias significativas. 
+
+## Comparaciones múltiples para "NBI" (en el modelo 10, que no es el ganador, pero que incluye NBI).
+
+```{r}
+library(emmeans)
+contrastes_NBI10 <- emmeans(M10, pairwise~NBI_agrupado, type="response")
+confint(contrastes_NBI10$contrasts)
+plot(contrastes_NBI10, comparisons = TRUE, xlab= "Probabilidad de consumo de F/V", ylab= "nivel de NBI")
+```
+
+*Figura 13*: Probabilidad de consumo de 5 o más porciones diarias de F/V para los 3 niveles de NBI, a escala de la VR. Las barras grises son los intervalos de confianza para las medias, las flechas rojas son para las comparaciones entre grupos. Si una flecha se superpone a otra de otro grupo, la diferencia no es significativa.
+
+Observamos que tanto las provincias con NBI bajo como alto presentan un consumo significativamente mayor de frutas y verduras respecto a las provincias con NBI medio. A su vez, no hay diferencias significativas en el consumo entre provincias con NBI alto y bajo. 
+
+## Tabla con los OR ajustados (no incluimos a la provincia)
+
+```{r echo=FALSE, results='hide',message=FALSE}
+
+#Modelamos con una sola variable explicatoria 
+
+m_quintil <- glm(Consumo_FV ~ Quintil_ingresos, data = datos1, family = binomial)
+m_quintil_contrastes<- emmeans(m_quintil, pairwise~Quintil_ingresos, type="response")
+confint(m_quintil_contrastes) #para quintiles no podemos ver tab_model porque no controla el error global
+
+m_niveledu <- glm(Consumo_FV ~ Nivel_Educ_agrup, data = datos1, family = binomial)
+tab_model(m_niveledu)
+
+m_vivienda <- glm(Consumo_FV ~ Vivienda_deficitaria, data=datos1, family = binomial)
+tab_model(m_vivienda)
+
+m_genero <- glm(Consumo_FV ~ Genero, data=datos1, family = binomial)
+tab_model(m_genero)
+
+m_edad <- glm(Consumo_FV ~ Edad, data=datos1, family = binomial)
+exp(confint(m_edad))
+exp(coef(M11))
+
+#Modelamos con las 3 variables control y de a una variables explicatorias a la vez 
+
+m_quintil_CC <- glm(Consumo_FV ~ Quintil_ingresos + Edad + Genero + Provincia, data = datos1, family = binomial)
+m_quintil_CC_contrastes<- emmeans(m_quintil_CC, pairwise~Quintil_ingresos, type="response")
+confint(m_quintil_CC_contrastes) #para quintiles no podemos ver tab_model porque no controla el error global
+
+m_niveledu_CC <- glm(Consumo_FV ~ Nivel_Educ_agrup + Edad + Genero + Provincia , data = datos1, family = binomial)
+tab_model(m_niveledu_CC)
+
+m_vivienda_CC <- glm(Consumo_FV ~ Vivienda_deficitaria + Edad + Genero + Provincia, data=datos1, family = binomial)
+tab_model(m_vivienda_CC)
+
+#Modelo final 
+
+datos1$Quintil_ingresos <- factor(datos1$Quintil_ingresos,
+                                levels = c("Quintil 1", "Quintil 2", "Quintil 3", "Quintil 4", "Quintil 5"))
+M11 <- glm(Consumo_FV ~ Quintil_ingresos + Nivel_Educ_agrup + Vivienda_deficitaria 
+           + Edad + Genero + Provincia, data = datos1, family = binomial)
+tab_model(M11)
+confint(M11_contrastes_quintil$contrasts)
+
+
+#Contruimos la DataFrame con los Valores de OR.
+Variables_explicatorias_odds <- c("Edad","Genero (mujer)", "Vivienda deficitaria (si)", "Nivel educativo (Sec Completo o mas)", "Quintiles", "Segundo vs primero ", "Tercero vs primero ", "Cuarto vs primero ", "Quinto vs primero ")
+
+#de a una VE
+IC_or <- c("1.011 (1.009-1.014)","1.32 (1.20-1.46)","0.76 (0.69-0.84)","1.38 (1.25-1.53)",1,"1.33 (1.04-1.31)","1.53 (1.19-1.95)","2.03 (1.61-2.56)","2.39 (1.90-3.00)")
+#de a una VE, ajustando por las Variables control.
+acOR<-c("-","-","0.64 (0.55-0.74)", "1.58 (1.42-1.75)", 1,"1.26 (0.98-1.63)","1.46 (1.14-1.88)","1.90 (1.49-2.42)", "2.27 (1.78-2.89)" )
+#ajustando por todo
+IC_a <- c("1.011 (1.008-1.014)","1.32 (1.19-1.46)", "0.78 (0.67-0.90)","1.29 (1.15-1.45)",1, "1.22 (0.95-1.58)","1.35 (1.04-1.74)", "1.67 (1.30-2.14)", "1.88 (1.46-2.44)")
+
+tabla2<- data.frame(Variables_explicatorias_odds,IC_or,acOR,IC_a)
+colnames(tabla2)<-c("Variables explicatorias", "OR (95% CI)","aCtrlOR (95% CI)", "aOR (95% CI)")
+library(flextable)
+flextabla2 <- flextable(tabla2)
+flextabla2 <- autofit(flextabla2)
+flextabla2 <- merge_at(flextabla2,i="5")
+flextabla2 <- bold(flextabla2,bold = TRUE, part = "header")
+flextabla2 <- bold(flextabla2, i="5", bold = TRUE)
+flextabla2 <- italic(flextabla2, i="5")
+flextabla2 <- fontsize(flextabla2,size = 12, part = "header")
+flextabla2 <- width(flextabla2, width = 1.5)
+flextabla2
+
+```
+
+
+```{r, out.width = "500pt", out.height="600pt", fig.align="center"}
+knitr::include_graphics("C:/Biometria/TP_Final/Tabla_2.png")
+```
+
+*Tabla 4*: Tabla resumen de OR obtenidos para las variables explicatorias. En la columna "OR (95%CI)" figuran los valores de cada variable por separado, sin ajustar por las demás, en la columna "aCtrlOR (95% CI)" ajustando por las variables control y en aOR (95% CI)" ajustando por todas las demás variables. 
+
+# Gráfico con los Odds Ratios (OR)
+
+```{r}
+# Create labels for plot
+boxLabels = c("Edad","Genero (mujer)", "Vivienda deficitaria (sí)", "Nivel educativo\n(Sec Completo o mas)",  "Segundo quintil vs primero ", "Tercer quintil vs primero ", "Cuarto quintil vs primero ", "Quinto quintil vs primero" )
+
+# Enter OR and CI data. boxOdds are the odds ratios, boxCILow is the lower bound of the CI, boxCIHigh is the upper bound.
+
+df <- data.frame(yAxis = length(boxLabels):1, boxOdds = c(1.01, 1.32, 0.78, 1.29, 1.22, 1.35, 1.67, 1.88), boxCILow = c(1.008, 1.19, 0.67, 1.15, 0.95, 1.04, 1.30, 1.46), boxCIHigh = c(1.014, 1.46, 0.90, 1.45, 1.58, 1.74, 2.14, 2.44))
+
+# Plot
+p <- ggplot(df, aes(x = boxOdds, y = boxLabels)) 
+
+p + geom_vline(aes(xintercept = 1), size = .25, linetype = "dashed") +
+geom_errorbarh(aes(xmax = boxCIHigh, xmin = boxCILow), size = 0.5, height = .2, color = "gray50") +
+ geom_point(size = 3.5, color = "orange") +
+ theme_bw() +
+ theme(panel.grid.minor = element_blank()) +
+ scale_y_discrete (df$boxLabels, limits = c("Edad","Genero (mujer)", "Vivienda deficitaria (sí)", "Nivel educativo\n(Sec Completo o mas)",  "Segundo quintil vs primero ", "Tercer quintil vs primero ", "Cuarto quintil vs primero ", "Quinto quintil vs primero" )) +
+ scale_x_continuous(breaks = seq(0,5,1) ) +
+ ylab("") +
+ xlab("OR ajustado") + ggtitle("Efecto del nivel socioeconómico sobre el \n consumo de frutas/verduras") +
+  annotate("text", x =  1.67, y = 7.35, label = "1.67", color="gray50")+
+  annotate("text", x =  1.01, y = 1.35, label = "1.01", color="gray50")+
+  annotate("text", x =  1.32, y = 2.35, label = "1.32", color="gray50")+
+  annotate("text", x =  1.29, y = 4.35, label = "1.29", color="gray50")+
+  annotate("text", x =  1.88, y = 8.35, label = "1.88", color="gray50")+
+  annotate("text", x =  1.22, y = 5.35, label = "1.22", color="gray50")+
+  annotate("text", x =  1.35, y = 6.35, label = "1.35", color="gray50")+
+  annotate("text", x =  0.78, y = 3.35, label = "0.78", color="gray50")
+
+```
+
+*Figura 14*: Gráfico de comparaciones, a escala de odds, del consumo de 5 o más porciones de frutas/verduras y sus intervalos de confianza entre niveles de las variables explicatorias del modelo elegido. El punto naranja indica el estimador puntual, y las barras negras, el IC. El valor del OR para cada variable se ajusta por el resto de las variables. 
+
+## Conclusiones
+
+**Por cada año que aumenta la edad de una persona**, el odds estimado de consumo de al menos 5 porciones diarias de frutas o verduras aumenta 1%, controlando por las otras variables (género, provincia de residencia, vivienda deficitaria/no deficitaria, nivel educativo, quintil de ingresos).**
+
+**El género mujer** está asociado con un aumento estimado en el odds de consumo de al menos 5 porciones diarias de frutas o verduras de entre un 19% y un 46% respecto de ser hombre, controlando por las otras variables, con un 95% de confianza.
+
+**Habitar en una vivienda deficitaria** está asociado con una disminución estimada en el odds de consumo de al menos 5 porciones diarias de frutas o verduras de entre un 10% y un 33% respecto de habitar en una vivienda no deficitaria, controlando por las otras variables, con un 95% de confianza.
+
+**Poseer un nivel educativo que incluya el secundario completo o más** está asociado con un aumento estimado en el odds de consumo de al menos 5 porciones diarias de frutas o verduras de entre un 15% y un 45% respecto de poseer un nivel educativo inferior, controlando por las otras variables, con un 95% de confianza.
+
+**Un ingreso del jefe del hogar perteneciente al segundo quintil** no está asociado con un aumento estimado en el odds de consumo de al menos 5 porciones diarias de frutas o verduras respecto del primer quintil, controlando por las otras variables, con un 95% de confianza. Si el jefe del hogar pertenece al **tercer quintil**, se produce un aumento en el odds de entre 4% y 74%. Si pertenece al **cuarto quintil**, aún mayor: de entre 30% y 114%. Y si pertenece al **quinto quintil**, de entre 46% y 144%.
+
+Según este análisis, el hábito saludable de consumir 5 o más porciones diarias de frutas y verduras está asociado positivamente con niveles socioeconómicos en general más altos. Por otro lado se observa una mayor proporción de mujeres con esta conducta y, que tanto para mujeres como hombres, con los años el consumo saludable va en aumento.
+
+# Gráfico de probabilidades a nivel de la VR
+
+## Según edad y género
+```{r, fig.dim = c(6, 4)}
+library(sjPlot)
+#Para hacer esto hay que volver a poner "vivienda deficitaria" con palabras
+datos1$Vivienda_deficitaria<- with(datos1, ifelse(Tipo_de_vivienda_agrupado =="No adecuada" |Banio=="No"| Agua %in% c("Dentro del terreno", "Fuera del terreno") |  Gas_agrupado=="No", "Deficitaria", "No deficitaria"))
+
+#Volvemos a definir el modelo
+M11 <- glm(Consumo_FV ~ Quintil_ingresos + Nivel_Educ_agrup + Vivienda_deficitaria + Edad + Genero + Provincia, data = datos1, family = binomial)
+
+plot_model(M11, type = "pred", terms=  c("Edad", "Genero"),
+          facet.grid = F, show.ci = TRUE, title = "Probabilidad estimada de consumo de frutas/verduras \n según edad y género", axis.title = c("Edad","Probabilidad de consumo de 5 o más porciones diarias de F/V"), axis.lim=c(0, 0.25))
+
+```
+
+*Figura 15*: Gráfico de probabilidades estimadas de consumo de 5 o más porciones de frutas/verduras diarias según edad y género. Se grafican los intervalos de confianza, con un nivel de confianza del 95%. 
+
+**En mujeres** la probabilidad de consumir 5 porciones diarias de frutas y verduras es mayor con respecto a hombres. 
+
+Ademas, **por cada año que aumenta la edad de una persona** la probabilidad de consumir 5 porciones de frutas y verduras diarias aumenta.
+
+## Según nivel de instrucción
+```{r, fig.dim = c(6, 4)}
+plot_model(M11, type = "pred", terms=  c("Nivel_Educ_agrup"),
+          facet.grid = F, show.ci = TRUE, title = "Probabilidad estimada de consumo de frutas/verduras \n según nivel de instrucción", axis.title = c("Nivel de instrucción","Probabilidad de consumo de 5 o más \n porciones diarias de F/V"), axis.lim=c(0, 0.1),  axis.labels = c("Secundario completo o más", "Primario o secundario \n incompleto"))
+
+```
+
+*Figura 16*: Gráfico de probabilidades estimadas de consumo de 5 o más porciones de frutas/verduras diarias según el nivel de instrucción. Se grafican los intervalos de confianza, con un nivel de confianza del 95%. 
+
+La probabilidad de consumir 5 porciones o más de frutas y verduras es menor si el individuo **tiene el secundario incompleto o menos.**
+
+## Según vivienda deficitaria o no deficitaria
+```{r, fig.dim = c(6, 4)}
+plot_model(M11, type = "pred", terms=  c("Vivienda_deficitaria"),
+          facet.grid = F, show.ci = TRUE, title = "Probabilidad estimada de consumo de frutas/verduras \n según tipo de vivienda", axis.title = c("Vivienda deficitaria","Probabilidad de consumo de 5 o más \n porciones diarias de F/V"), axis.lim=c(0, 0.1))
+```
+
+*Figura 17*: Gráfico de probabilidades estimadas de consumo de 5 o más porciones de frutas/verduras diarias según si la vivienda es o no deficitaria. Se grafican los intervalos de confianza, con un nivel de confianza del 95%. 
+
+La probabilidad de consumir 5 porciones diarias de frutas y verduras es menor si **el individuo habita una vivienda deficitaria.** 
+
+## Según vivienda quintiles de ingresos
+```{r, fig.dim = c(6, 4)}
+plot_model(M11, type = "pred", terms=  c("Quintil_ingresos"),
+          facet.grid = F, show.ci = TRUE, title = "Probabilidad estimada de consumo de frutas/verduras \n según quintil de ingresos", axis.title = c("Quintil de ingresos","Probabilidad de consumo de 5 o más \n porciones diarias de F/V"), axis.lim=c(0, 0.1))
+```
+
+*Figura 18*: Gráfico de probabilidades estimadas de consumo de 5 o más porciones de frutas/verduras diarias según el quintil de ingresos del jefe de hogar. Se grafican los intervalos de confianza, con un nivel de confianza del 95%. 
+
+**A medida que el ingreso del jefe del hogar sea de un quintil superior** la probabilidad de consumir 5 porciones diarias de frutas y verduras tambien ira aumentando.  
+
+# Conclusiones y discusión
+
+Este estudio permitió identificar que el nivel de instrucción, el hecho de habitar en una vivienda adecuada (casa o departamento, con acceso a gas de red, baño y agua dentro de la vivienda) y el nivel de ingresos del jefe del hogar están asociados positivamente con el consumo de frutas y verduras en la población argentina mayor a 18 años residente en regiones urbanizadas (de 5000 o más habitantes), controlando por la edad, el género y la provincia de residencia, con un 95% de confianza.
+
+A pesar de que no era parte de nuestra hipótesis, también hallamos que las mujeres consumen más frutas/verduras que los hombres, y que con el aumento en la edad aumenta la probabilidad de consumir frutas/verduras.
+
+Resultó muy interesante el efecto observado de dosis-respuesta en cuanto a los quintiles de ingresos: sistemáticamente, quintiles más altos poseían un odds ratio más alto de consumo de frutas/verduras respecto a quintiles más bajos, estimandose un aumento del consumo entre el primer y el quinto quintil de entre 46% y 144%. Por lo tanto, la dieta baja en consumo de frutas y verduras impactaría especialmente sobre las familias de menores ingresos.
+
+Si bien esperábamos que a mayor NBI, el consumo diario de frutas y verduras fuera menor, no observamos esta tendencia en los resultados. Se verificó que el consumo de provincias con nivel "bajo" no difirió significativamente con las de "alto", mientras que el nivel "medio" fue significativamente menor que los dos anteriores. Sin embargo, la mayoria de las provincias que fueron agrupadas en NBI alto (Corrientes, Chaco, Santiego del Estero, Misiones, Formosa, Salta y Jujuy) forman parte de las principales productoras de hortalizas en el país (Giacobone, Castronuovo, Tiscornia y Allemandi, 2018). Esto podría brindar a la población de estas provincias un acceso directo a las verduras, posiblemente a un precio menor que en el resto del país. Otra posibilidad, es el surgimiento de ferias de agricultura familiar gestadas a la par de la desindustrialización y un escenario de precarización, pobreza y concetración de la tierra rural, de la que participan organismos gurbernamentales y no (INTA y Ministerio de Desarrollo Social de la Nación) fomentando diferentes estrategias como posibilidad de generar ingresos a productores famiiliares principalmente en el noreste, noroeste (donde se concetran las provincias de mayor NBI) y zona pampeana, acercando las producciones fruto-hortícolas directamente del productor al consumidor. A modo de ejemplo, la provincia de Formosa, que posee el mayor NBI del país, de 19.7%, es una de las provincias que más frutas/verduras consume. Es una forma posible de explicar lo observado.
+
+La inclusión de "provincia" como variable de control resulta explicativa. Cabe destacar que esta variable controla más factores que el nivel socioeconómico, y agrega información que no podemos indentificar, como la accesibilidad a las frutas/verduras, la disponibilidad de los alimentos, los precios, las distancias, las costumbres, las políticas dirigidas a la promoción del consumo, etcétera.
+
+Con los resultados expuestos, podemos concluir que las variables nivel de instrucción, deficiencia en la vivienda y nivel de ingresos medidos en quintiles, constituyen factores de riesgo para el consumo bajo de alimentos saludables, actuando a escalas individuo y hogar, para una población mayor a 18 años argentina habitante en áreas de 5000 habitantes o más. Mientras que a escala provincial, no podemos concluir que el NBI sea un factor con una asociación directa al bajo consumo, sino que estaría atravesada por otras variables no contempladas en este estudio. 
+
+# Bibliografía
+
+1) OMS (2014). Informe sobre la situación mundial de las enfermedades no transmisibles. Recuperado de https://apps.who.int/iris/bitstream/handle/10665/149296/WHO_NMH_NVI_15.1_spa.pdf?sequence=1.
+
+2) OMS (2010). Informe sobre la situación mundial de las enfermedades no transmisibles. Recuperado de: https://www.who.int/nmh/publications/ncd_report2010/es/.
+
+3) Phelan JC, Link BG, Tehranifar P. Social Conditions as Fundamental Causes of Health Inequalities: Theory, Evidence, and Policy Implications. Journal of Health and Social Behavior. 2010; 51(1_suppl): S28-S40. https://doi.org/10.1177/0022146510383498
+
+4) Marmot M, Allen JJ. Social determinants of health equity. Am J Public Health. 2014 Sep; 104 Suppl 4 (Suppl 4): S517-9. https://doi.org/10.2105/AJPH.2014.302200
+
+5) Di Cesare M, Khang, YH, Asaria P, Blakely T, Cowan MJ, Farzadfar F et al. Inequalities in Non-Communicable Diseases and Effective Responses. The Lancet. 2014; 381, 585-597.
+https://doi.org/10.1016/S0140-6736(12)61851-0
+
+6) Bulletin of the World Health Organization 2009; 87:84-84. doi: 10.2471/BLT.08.062695
+
+7) Resultados definitivos de la 4° Encuesta Nacional de Factores de Riesgo, INDEC 2018. https://www.indec.gob.ar/ftp/cuadros/publicaciones/enfr_2018_resultados_definitivos.pdf
+
+8) Informe Censal 2010, datos de NBI. http://www2.mecon.gov.ar/hacienda/dinrep/Informes/archivos/NBIAmpliado.pdf
+
+9) Giacobone G, Castronuovo L, Tiscornia V y Allemandi L. Análisis de la cadena de suministro de frutas y verduras en Argentina. Fundación Interamericana del Corazón, 2018.
