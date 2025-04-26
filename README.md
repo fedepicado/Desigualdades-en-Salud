@@ -1,3 +1,1 @@
-## Biometria II
-
-Licenciatura en Ciencias Biologicas.
+Trabajo Final de la materia Biometria II
