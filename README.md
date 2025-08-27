@@ -1,1 +1,2 @@
-Trabajo Final de la materia Biometria II
+[Poster.pdf](https://github.com/user-attachments/files/21999862/Poster.pdf)
+
